@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}التطبيقات{% endblock %}
+{% block content %}
+<div style="text-align:center;margin-top:8px">
+  <div style="font-size:22px;font-weight:800">مرحباً {{ user.first_name|default:user.username }}</div>
+  <div style="color:var(--muted);font-size:13px">اسحب التطبيق لتغيير مكانه · المديولات الفرعية داخل مجلد الرئيسي</div>
+</div>
+<div class="apps">
+{% for g in groups %}
+  {% if g.children %}
+  <details class="tile folder" draggable="true" style="--c1:{{ g.c1 }};--c2:{{ g.c2 }}">
+    <summary>
+      <div class="ico">{{ g.icon }}</div>
+      <div class="tn">{{ g.module.name }}</div>
+      <div class="tc">{{ g.children|length }} مديول فرعي</div>
+    </summary>
+    <div class="fpanel">
+      {% if g.url %}<a href="{% url g.url %}"><b>{{ g.module.name }}</b></a>{% endif %}
+      {% for c in g.children %}<a href="#">{{ c.name }}</a>{% endfor %}
+    </div>
+  </details>
+  {% else %}
+  <a class="tile {% if not g.url %}soon{% endif %}" draggable="true" href="{% if g.url %}{% url g.url %}{% else %}#{% endif %}" style="--c1:{{ g.c1 }};--c2:{{ g.c2 }};text-decoration:none;color:inherit;display:block">
+    <div class="ico">{{ g.icon }}</div>
+    <div class="tn">{{ g.module.name }}</div>
+    <div class="tc">{% if g.url %}افتح{% else %}قريباً{% endif %}</div>
+  </a>
+  {% endif %}
+{% empty %}
+  <div class="empty" style="grid-column:1/-1">مفيش مديولات مفعّلة ليك دلوقتي.</div>
+{% endfor %}
+</div>
+{% endblock %}
