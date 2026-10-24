@@ -1,13 +1,24 @@
 {% extends "base.html" %}
-{% block title %}{{ title }}{% endblock %}
-{% block crumb %}<span>الرئيسية</span> › <b>{{ title }}</b>{% endblock %}
+{% load veyra_i18n %}
+{% block title %}{{ title|tr }}{% endblock %}
+{% block crumb %}<span>{{ 'الرئيسية'|tr }}</span> › <b>{{ title|tr }}</b>{% endblock %}
 {% block modnav %}
 <nav class="modnav">
-  <span class="mname">{{ icon }} {{ title }}</span>
-  {% for label, url in menus %}<a href="{% url url %}" class="on">{{ label }}</a>{% endfor %}
+  <span class="mname"><span class="mico">{{ icon|safe }}</span>{{ title|tr }}</span>
+  {% for label, url in menus %}<a href="{% url url %}" class="{% if url == request.resolver_match.url_name %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
+  {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
   <span class="sp"></span>
+  {% if create_url %}<a class="btn sm" href="{% url create_url %}">+ {{ 'جديد'|tr }}</a>{% endif %}
+  <details class="dd">
+    <summary class="btn ghost sm">{{ '⋯ إجراءات'|tr }}</summary>
+    <div class="dd-menu">
+      <a href="javascript:window.print()">🖨 {{ 'طباعة'|tr }}</a>
+      <a href="#" onclick="exportSelected();return false;">⬇ {{ 'تصدير المحدد CSV'|tr }}</a>
+      <a href="#" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=true);updateBulk();return false;">☑ {{ 'تحديد الكل'|tr }}</a>
+    </div>
+  </details>
   <form method="get" style="margin:0">
-    <input class="search" style="color:var(--text);background:#fff;border-color:var(--line)" name="q" value="{{ q }}" placeholder="بحث...">
+    <input class="search" style="color:var(--text);background:var(--card);border-color:var(--line);width:170px" name="q" value="{{ q }}" placeholder="{{ 'بحث...'|tr }}">
     {% if request.GET.f %}<input type="hidden" name="f" value="{{ request.GET.f }}">{% endif %}
   </form>
 </nav>
@@ -16,69 +27,59 @@
 <div class="stats">
   {% for s in stats %}
   <a class="stat {% if s.active %}on{% endif %}" href="?f={{ s.key }}{% if q %}&q={{ q }}{% endif %}">
-    <div class="c">{{ s.count }}</div><div class="l">{{ s.label }}</div>
+    <div class="c">{{ s.count }}</div><div class="l">{{ s.label|tr }}</div>
   </a>
   {% endfor %}
 </div>
 
-<div id="bulk" class="hidden" style="display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:9px 12px;border-radius:10px;background:var(--navy);color:#fff">
-  <b><span id="bulk-count">0</span> محدد</b>
-  <span class="sp" style="flex:1"></span>
-  <button class="btn sm" type="button" onclick="exportSelected()">تصدير CSV</button>
-  <button class="btn sm ghost" type="button" disabled title="قريباً">أرشفة</button>
-  <button class="btn sm ghost" type="button" disabled title="قريباً">حذف</button>
-  <button class="btn sm ghost" type="button" onclick="clearSelection()">إلغاء التحديد</button>
+<div id="bulk" class="hidden">
+  <b><span id="bulk-count">0</span> {{ 'محدد'|tr }}</b>
+  <span class="sp"></span>
+  <button class="btn sm" type="button" onclick="exportSelected()">⬇ CSV</button>
+  <button class="btn sm ghost" type="button" disabled>{{ 'أرشفة'|tr }}</button>
+  <button class="btn sm ghost" type="button" disabled>{{ 'حذف'|tr }}</button>
+  <button class="btn sm ghost" type="button" onclick="clearSelection()">{{ 'إلغاء التحديد'|tr }}</button>
 </div>
 
 <table class="tbl" id="list">
   <thead><tr>
-    <th style="width:34px"><input type="checkbox" id="select-all" onclick="toggleAll(this)"></th>
-    {% for c in columns %}<th>{{ c }}</th>{% endfor %}<th>الحالة</th><th></th>
+    <th style="width:30px"><input type="checkbox" id="select-all" onclick="toggleAll(this)"></th>
+    {% for c in columns %}<th>{{ c|tr }}</th>{% endfor %}<th>{{ 'الحالة'|tr }}</th><th></th>
   </tr></thead>
   <tbody>
   {% for row in rows %}
     <tr>
       <td><input type="checkbox" class="row-check" value="{{ row.id }}" onchange="updateBulk()"></td>
       {% for cell in row.cells %}
-        <td>{% if forloop.first and row.detail %}<a href="{% url row.detail row.id %}" style="text-decoration:none;font-weight:700;color:var(--blue)">{{ cell }}</a>{% else %}{{ cell }}{% endif %}</td>
+        <td>{% if forloop.first and row.detail %}<a href="{% url row.detail row.id %}" style="text-decoration:none;font-weight:800;color:var(--blue)">{{ cell }}</a>{% else %}{{ cell }}{% endif %}</td>
       {% endfor %}
-      <td>
-        <span class="pill {% if row.s == 'ok' or row.s == 'delivered' or row.s == 'received' %}ok-p{% elif row.s == 'low' %}low-p{% elif row.s == 'confirmed' or row.s == 'draft' %}mute-p{% else %}warn-p{% endif %}">{{ row.label }}</span>
-      </td>
+      <td><span class="pill {% if row.s == 'ok' or row.s == 'delivered' or row.s == 'received' %}ok-p{% elif row.s == 'low' %}low-p{% elif row.s == 'confirmed' or row.s == 'draft' %}mute-p{% else %}warn-p{% endif %}">{{ row.label|tr }}</span></td>
       <td>
         {% if row.action %}
         <form method="post" action="{% url row.action.0 row.id %}" style="margin:0">{% csrf_token %}
-          <button class="btn sm" type="submit">{{ row.action.1 }}</button>
+          <button class="btn sm" type="submit">{{ row.action.1|tr }}</button>
         </form>
         {% endif %}
       </td>
     </tr>
   {% empty %}
-    <tr><td colspan="{{ columns|length|add:3 }}" class="empty">لا توجد سجلات</td></tr>
+    <tr><td colspan="{{ columns|length|add:3 }}" class="empty">{{ 'لا توجد سجلات'|tr }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
 
 <script>
-  function selectedRows() { return Array.from(document.querySelectorAll('.row-check:checked')); }
-  function updateBulk() {
+  function selectedRows(){ return Array.from(document.querySelectorAll('.row-check:checked')); }
+  function updateBulk(){
     const n = selectedRows().length;
     document.getElementById('bulk').classList.toggle('hidden', n === 0);
     document.getElementById('bulk-count').textContent = n;
     const all = document.querySelectorAll('.row-check');
     document.getElementById('select-all').checked = all.length > 0 && n === all.length;
   }
-  function toggleAll(box) {
-    document.querySelectorAll('.row-check').forEach(c => c.checked = box.checked);
-    updateBulk();
-  }
-  function clearSelection() {
-    document.querySelectorAll('.row-check').forEach(c => c.checked = false);
-    document.getElementById('select-all').checked = false;
-    updateBulk();
-  }
-  // تصدير الصفوف المحددة كملف CSV (يفتح في Excel)
-  function exportSelected() {
+  function toggleAll(box){ document.querySelectorAll('.row-check').forEach(c => c.checked = box.checked); updateBulk(); }
+  function clearSelection(){ document.querySelectorAll('.row-check').forEach(c => c.checked = false); document.getElementById('select-all').checked = false; updateBulk(); }
+  function exportSelected(){
     const table = document.getElementById('list');
     const headers = Array.from(table.querySelectorAll('thead th')).slice(1, -2).map(th => th.innerText.trim());
     const lines = [headers.join(',')];

@@ -1,13 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 
 from core import views
+from core.forms import VeyraLoginForm
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
+    path("i18n/", include("django.conf.urls.i18n")),
+    path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html", authentication_form=VeyraLoginForm), name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("accounts/password/", auth_views.PasswordChangeView.as_view(
+        template_name="password_change.html", success_url="/"), name="password_change"),
     path("", views.home, name="home"),
     path("inventory/products/", views.product_list, name="product_list"),
     path("inventory/products/<int:pk>/", views.product_detail, name="product_detail"),
@@ -17,4 +21,14 @@ urlpatterns = [
     path("purchasing/orders/", views.purchase_orders, name="purchase_orders"),
     path("purchasing/orders/<int:pk>/", views.purchase_detail, name="purchase_detail"),
     path("purchasing/orders/<int:pk>/receive/", views.purchase_receive, name="purchase_receive"),
+    path("settings/", views.settings_index, name="settings_index"),
+    path("settings/<slug:code>/", views.settings_module, name="settings_module"),
+    path("contacts/partners/", views.partner_list, name="partner_list"),
+    path("contacts/partners/new/", views.partner_create, name="partner_create"),
+    path("contacts/partners/<int:pk>/edit/", views.partner_edit, name="partner_edit"),
+    path("inventory/products/new/", views.product_create, name="product_create"),
+    path("sales/orders/new/", views.sales_create, name="sales_create"),
+    path("sales/orders/<int:pk>/edit/", views.sales_edit, name="sales_edit"),
+    path("purchasing/orders/new/", views.purchase_create, name="purchase_create"),
+    path("purchasing/orders/<int:pk>/edit/", views.purchase_edit, name="purchase_edit"),
 ]

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load veyra_i18n %}
+{% block title %}{{ title|tr }}{% endblock %}
+{% block crumb %}<span>{{ 'الرئيسية'|tr }}</span> › {% if back_url %}<a href="{% url back_url %}">{{ icon }}</a> › {% endif %}<b>{{ title|tr }}</b>{% endblock %}
+{% block modnav %}
+<nav class="modnav">
+  <span class="mname"><span class="mico">{{ icon|safe }}</span>{{ title|tr }}</span>
+  {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
+  <span class="sp"></span>
+  {% if back_url %}<a href="{% url back_url %}">{{ 'رجوع'|tr }}</a>{% endif %}
+</nav>
+{% endblock %}
+{% block content %}
+<form method="post" novalidate>{% csrf_token %}
+  <div class="card" style="margin-bottom:12px">
+    {% if form.non_field_errors %}<div class="msg error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="fgrid">
+      {% for field in form %}
+      <div>
+        <label>{{ field.label|tr }}</label>
+        {{ field }}
+        {% for e in field.errors %}<div style="color:#E5484D;font-size:11.5px">{{ e }}</div>{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if formset %}
+  <div class="card" style="margin-bottom:12px">
+    <h3 style="margin:0 0 8px;font-size:14px">{{ 'الأصناف'|tr }}</h3>
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}<div class="msg error">{{ formset.non_form_errors }}</div>{% endif %}
+    <table class="tbl">
+      <thead><tr>{% for f in formset.empty_form.visible_fields %}<th>{{ f.label|tr }}</th>{% endfor %}<th>{{ 'حذف'|tr }}</th></tr></thead>
+      <tbody>
+      {% for line in formset %}
+        <tr>
+          {% for hidden in line.hidden_fields %}{{ hidden }}{% endfor %}
+          {% for f in line.visible_fields %}<td>{{ f }}{% for e in f.errors %}<div style="color:#E5484D;font-size:11.5px">{{ e }}</div>{% endfor %}</td>{% endfor %}
+          <td>{% if line.can_delete %}{{ line.DELETE }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="muted" style="margin-top:6px">{{ 'لإضافة صنف جديد احفظ الأمر، وبعدها ارجع عدّل وضيف الصنف التاني.'|tr }}</div>
+  </div>
+  {% endif %}
+
+  <div style="display:flex;gap:8px">
+    <button class="btn" type="submit">{{ 'حفظ'|tr }}</button>
+    {% if back_url %}<a class="btn ghost" href="{% url back_url %}">{{ 'إلغاء'|tr }}</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

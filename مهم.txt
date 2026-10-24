@@ -1,0 +1,25 @@
+علشان تثبّته بشكل دائم
+C:\Windows\System32\cmd.exe /K "cd /d D:\veyra_backend"
+لازم تعدّل اختصار CMD اللي بتفتحه عادةً:
+1. افتح قائمة Start وابحث عن Command Prompt.
+2. اضغط كليك يمين عليه واختر Open file location.
+3. اضغط كليك يمين على الاختصار ثم Properties.
+4. في خانة Target، خليها:
+
+
+لتشغيل الرنامج
+python manage.py makemigrations core accounts inventory sales purchasing
+python manage.py migrate
+python manage.py seed_modules
+python manage.py seed_demo
+python manage.py enable_all_modules
+python manage.py runserver
+
+
+
+رفع اخر تعديل علي جيت هب
+git add .
+git commit -m "Update project"
+git push
+
+

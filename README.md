@@ -65,4 +65,3 @@ python manage.py test
 - كلمات السر في `seed_demo` للتجربة المحلية بس، ولازم تتغير قبل أي نشر.
 - `VEYRA_SECRET_KEY` لازم تتحط في البيئة قبل النشر، ومعاها `VEYRA_DEBUG=0`.
 - للتحويل لـ PostgreSQL: `VEYRA_DB=postgres` مع متغيرات `PG_*`.
-"# veyra-erp" 

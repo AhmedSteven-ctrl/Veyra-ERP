@@ -1,44 +1,48 @@
 {% extends "base.html" %}
+{% load veyra_i18n %}
 {% block title %}{{ title }}{% endblock %}
-{% block crumb %}<span>الرئيسية</span> › <a href="javascript:history.back()">{{ icon }}</a> › <b>{{ title }}</b>{% endblock %}
+{% block crumb %}<span>{{ 'الرئيسية'|tr }}</span> › <b>{{ title }}</b>{% endblock %}
 {% block modnav %}
 <nav class="modnav">
-  <span class="mname">{{ icon }} {{ title }}</span>
-  {% for label, url in menus %}<a href="{% url url %}">{{ label }}</a>{% endfor %}
+  <span class="mname"><span class="mico">{{ icon|safe }}</span>{{ title }}</span>
+  {% for label, url in menus %}<a href="{% url url %}">{{ label|tr }}</a>{% endfor %}
+  {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
   <span class="sp"></span>
+  <a class="btn ghost sm" href="javascript:history.back()">{{ 'رجوع'|tr }}</a>
+  {% if edit_url %}<a class="btn sm" href="{% url edit_url obj.pk %}">{{ 'تعديل'|tr }}</a>{% endif %}
 </nav>
 {% endblock %}
 {% block content %}
 {% if steps %}
-<div style="display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;margin-bottom:14px;flex-wrap:wrap">
+<div style="display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);margin-bottom:12px;flex-wrap:wrap">
   {% for s in steps %}
-  <div style="flex:1;min-width:120px;text-align:center;padding:9px 6px;font-size:12.5px;border-inline-end:1px solid var(--line);
-    {% if s.state == 'done' %}background:rgba(15,175,123,.12);color:#08875E;{% elif s.state == 'cur' %}background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font-weight:700;{% else %}color:var(--muted);{% endif %}">
-    {{ s.label }}
+  <div style="flex:1;min-width:110px;text-align:center;padding:7px 6px;font-size:11.5px;border-inline-end:1px solid var(--line);
+    {% if s.state == 'done' %}background:rgba(15,175,123,.14);color:#08875E;{% elif s.state == 'cur' %}background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font-weight:800;{% else %}color:var(--muted);{% endif %}">
+    {{ s.label|tr }}
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-<div class="card" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px">
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 22px">
+<div class="card" style="margin-bottom:12px">
+  <div class="fgrid">
     {% for label, value in fields %}
     <div>
-      <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">{{ label }}</div>
-      <div style="font-weight:700;padding:8px 10px;border-radius:8px;background:rgba(61,99,245,.04);border:1px solid var(--line)">{{ value }}</div>
+      <div class="muted" style="margin-bottom:3px">{{ label|tr }}</div>
+      <div style="font-weight:800;padding:7px 9px;border-radius:9px;background:rgba(61,99,245,.06);border:1px solid var(--line)">{{ value }}</div>
     </div>
     {% endfor %}
   </div>
 </div>
 
 {% if lines is not None %}
-<div class="card" style="margin-bottom:14px">
-  <h3 style="margin:0 0 10px">التفاصيل</h3>
+<div class="card" style="margin-bottom:12px">
+  <h3 style="margin:0 0 8px;font-size:14px">{{ 'التفاصيل'|tr }}</h3>
   <table class="tbl">
-    <thead><tr>{% for c in line_cols %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <thead><tr>{% for c in line_cols %}<th>{{ c|tr }}</th>{% endfor %}</tr></thead>
     <tbody>
     {% for row in lines %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
-    {% empty %}<tr><td colspan="{{ line_cols|length }}" class="empty">مفيش تفاصيل</td></tr>{% endfor %}
+    {% empty %}<tr><td colspan="{{ line_cols|length }}" class="empty">{{ 'مفيش تفاصيل'|tr }}</td></tr>{% endfor %}
     </tbody>
   </table>
 </div>

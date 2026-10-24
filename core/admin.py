@@ -24,3 +24,13 @@ class CompanyModuleAdmin(admin.ModelAdmin):
 class PartnerAdmin(admin.ModelAdmin):
     list_display = ("name", "kind", "company", "city")
     list_filter = ("company", "kind")
+
+
+from .models import ModuleSetting  # noqa: E402
+
+
+@admin.register(ModuleSetting)
+class ModuleSettingAdmin(admin.ModelAdmin):
+    list_display = ("module", "key", "company", "value")
+    list_filter = ("company", "module")
+    search_fields = ("key",)

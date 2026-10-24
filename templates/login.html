@@ -1,11 +1,23 @@
 {% extends "base.html" %}
-{% block title %}تسجيل الدخول{% endblock %}
+{% load static veyra_i18n %}
+{% block title %}{{ 'تسجيل الدخول'|tr }}{% endblock %}
+{% block crumb %}<b>{{ 'تسجيل الدخول'|tr }}</b>{% endblock %}
 {% block content %}
-<div class="card" style="max-width:380px;margin:40px auto">
-  <h2>تسجيل الدخول</h2>
+<div class="card" style="max-width:380px;margin:30px auto">
+  <div style="text-align:center;margin-bottom:12px">
+    <img src="{% static 'img/logo.png' %}" alt="Veyra" style="width:64px;height:64px;object-fit:contain">
+    <h2 style="margin:6px 0 0">Veyra ERP</h2>
+    <div class="muted">{{ 'ادخل بحسابك للمتابعة'|tr }}</div>
+  </div>
+  {% if form.non_field_errors %}<div class="msg error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
   <form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn" type="submit">دخول</button>
+    <div class="fgrid" style="grid-template-columns:1fr">
+      {% for field in form %}
+      <div><label>{{ field.label|tr }}</label>{{ field }}</div>
+      {% endfor %}
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <div style="margin-top:12px"><button class="btn" type="submit" style="width:100%;justify-content:center">{{ 'دخول'|tr }}</button></div>
   </form>
 </div>
 {% endblock %}

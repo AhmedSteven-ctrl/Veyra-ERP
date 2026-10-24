@@ -10,7 +10,7 @@ MODULES = [
     ("employees", "الموظفون", "main", None, []),
     ("manufacturing", "التصنيع", "main", None, ["inventory"]),
     ("quality", "الجودة", "main", None, ["inventory"]),
-    ("maintenance", "الصيانة", "main", None, []),
+    ("maintenance", "الصيانة", "sub", "manufacturing", ["inventory"]),  # بتخدم التصنيع والأسطول والأصول
     ("project", "المشروع", "main", None, []),
     ("planning", "التخطيط", "main", None, ["employees"]),
     ("calendar", "التقويم", "main", None, []),
@@ -40,6 +40,7 @@ MODULES = [
     ("appraisals", "تقييم الأداء", "sub", "employees", ["employees"]),
     ("emailmkt", "التسويق بالبريد", "sub", "crm", ["crm"]),
     ("events", "الفعاليات", "sub", "crm", ["crm"]),
+    ("link_tracker", "متتبع الروابط", "sub", "emailmkt", ["emailmkt"]),
     ("ecommerce", "المتجر الإلكتروني", "sub", "website", ["website", "sales", "inventory"]),
     ("livechat", "الدردشة المباشرة", "sub", "website", ["website"]),
     ("settings", "الإعدادات", "main", None, []),
