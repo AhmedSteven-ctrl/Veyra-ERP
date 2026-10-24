@@ -18,8 +18,12 @@ python manage.py runserver
 
 
 رفع اخر تعديل علي جيت هب
+
+git status
 git add .
-git commit -m "Update project"
-git push
+git commit -m "Update Veyra ERP"
+
+
+git add . && git commit -m "Update Veyra ERP" && git push origin main
 
 
