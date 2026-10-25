@@ -1,10 +1,21 @@
-// تبديل الوضع الداكن/الفاتح
+// تبديل الوضع الداكن/الفاتح مع تحديث وصف الزر لقارئات الشاشة.
+function syncThemeButton() {
+  var button = document.getElementById('theme-btn');
+  if (!button) return;
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  button.textContent = dark ? '☀' : '☾';
+  button.setAttribute('aria-label', label);
+  button.setAttribute('title', label);
+}
 function toggleTheme(){
   var h = document.documentElement;
   var next = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   h.setAttribute('data-theme', next);
   try { localStorage.setItem('veyra-theme', next); } catch(e){}
+  syncThemeButton();
 }
+document.addEventListener('DOMContentLoaded', syncThemeButton);
 // سحب الكروت لترتيبها (الترتيب مؤقت في الصفحة)
 (function(){
   let dragEl = null;
