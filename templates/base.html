@@ -19,7 +19,7 @@
   <input class="search" placeholder="🔎 {{ 'بحث شامل (قريباً)'|tr }}" disabled>
   <span class="who">{{ user.get_full_name|default:user.username }}{% if user.company %} · {{ user.company.name }}{% endif %}</span>
   {% endif %}
-  <button class="iconbtn" id="theme-btn" type="button" onclick="toggleTheme()" title="dark / light">🌓</button>
+  <button class="iconbtn" id="theme-btn" type="button" onclick="toggleTheme()" title="Toggle color theme" aria-label="Toggle color theme">☾</button>
   <form class="lang-form" method="post" action="{% url 'set_language' %}">{% csrf_token %}
     <input type="hidden" name="next" value="{{ request.path }}">
     <input type="hidden" name="language" value="{% if request.LANGUAGE_CODE == 'en' %}ar{% else %}en{% endif %}">
