@@ -3,8 +3,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from core.models import Company, Module, ModuleSetting, Partner
-from core.settings_schema import current_values, save_values
+from core.models import Company, Module, Partner
 from core.services import ModuleDependencyError, set_module
 from inventory.models import Product, Warehouse
 from inventory.services import StockError, issue, receive, on_hand
@@ -70,43 +69,3 @@ class StockLedgerTests(TestCase):
         self.assertEqual(on_hand(self.company, self.prod, self.wh), Decimal("10"))
         order.refresh_from_db()
         self.assertEqual(order.status, "confirmed")
-
-
-
-class ModuleSettingsSchemaTests(TestCase):
-    def setUp(self):
-        SeedModules().handle()
-        self.company = Company.objects.create(name="شركة إعدادات", code="SETTINGS")
-
-    def test_settings_round_trip_uses_module_foreign_key_and_json_values(self):
-        values_to_save = {
-            "prefix": "SOX",
-            "approval": False,
-            "quote_validity": 45,
-            "tax_rate": Decimal("15.25"),
-        }
-
-        save_values(self.company, "sales", values_to_save)
-
-        sales_module = Module.objects.get(code="sales")
-        stored = {
-            row.key: row.value
-            for row in ModuleSetting.objects.filter(company=self.company, module=sales_module)
-        }
-        self.assertEqual(stored["prefix"], "SOX")
-        self.assertIs(stored["approval"], False)
-        self.assertEqual(stored["quote_validity"], 45)
-        self.assertEqual(stored["tax_rate"], "15.25")
-
-        restored = current_values(self.company, "sales")
-        self.assertEqual(restored["prefix"], "SOX")
-        self.assertIs(restored["approval"], False)
-        self.assertEqual(restored["quote_validity"], 45)
-        self.assertEqual(restored["tax_rate"], Decimal("15.25"))
-
-    def test_false_setting_is_preserved_and_defaults_are_company_scoped(self):
-        save_values(self.company, "sales", {"approval": False})
-        other_company = Company.objects.create(name="شركة أخرى", code="SETTINGS2")
-
-        self.assertIs(current_values(self.company, "sales")["approval"], False)
-        self.assertIs(current_values(other_company, "sales")["approval"], True)

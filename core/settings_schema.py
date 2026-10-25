@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django import forms
 
-from .models import Module, ModuleSetting
+from .models import ModuleSetting
 
 SCHEMA = {
     "sales": [
@@ -82,29 +82,24 @@ def _spec(field):
 
 
 def current_values(company, code):
-    saved = dict(
-        ModuleSetting.objects.filter(company=company, module__code=code)
-        .values_list("key", "value")
-    )
+    saved = dict(ModuleSetting.objects.filter(company=company, module=code).values_list("key", "value"))
     out = {}
     for field in SCHEMA.get(code, []):
         key, _label, kind, default, _choices, _group = _spec(field)
-        raw = saved.get(key, default)
-        if raw is None:
-            raw = default
-
-        if kind == "bool":
-            if isinstance(raw, bool):
-                out[key] = raw
+        if key in saved:
+            raw = saved[key]
+            if kind == "bool":
+                out[key] = raw == "1"
+            elif kind == "int":
+                out[key] = int(raw or default)
+            elif kind == "decimal":
+                out[key] = Decimal(raw or str(default))
             else:
-                out[key] = str(raw).strip().lower() in {"1", "true", "yes", "on"}
-        elif kind == "int":
-            out[key] = int(raw)
-        elif kind == "decimal":
-            out[key] = Decimal(str(raw))
+                out[key] = raw
         else:
-            out[key] = raw
+            out[key] = default
     return out
+
 
 DESC = {
     ("sales", "approval"): "أوامر البيع فوق الحد بتحتاج موافقة المدير",
@@ -153,14 +148,8 @@ def grouped(code, form):
 
 
 def save_values(company, code, cleaned):
-    """Persist typed module settings using the Module foreign key and JSONField."""
-    module = Module.objects.get(code=code)
     for key, value in cleaned.items():
-        # JSONField does not serialize Decimal; a string preserves decimal precision.
-        stored_value = str(value) if isinstance(value, Decimal) else value
-        ModuleSetting.objects.update_or_create(
-            company=company,
-            module=module,
-            key=key,
-            defaults={"value": stored_value},
-        )
+        if isinstance(value, bool):
+            value = "1" if value else "0"
+        ModuleSetting.objects.update_or_create(company=company, module=code, key=key,
+                                               defaults={"value": str(value)})
