@@ -95,3 +95,126 @@
   .lang-form{margin:0}
   @media (max-width:800px){.search{display:none}.crumb{display:none}.who{display:none}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* Veyra corporate UI refresh: restrained navy/teal, clear hierarchy, accessible states. */
+:root {
+  --navy: #172B45;
+  --navy2: #223D5B;
+  --blue: #176B78;
+  --violet: #327F88;
+  --text: #202D3B;
+  --muted: #657487;
+  --line: #DCE3EA;
+  --card: #FFFFFF;
+  --glass: rgba(255,255,255,.96);
+  --bg: #F3F6F9;
+  --th: #EAF0F5;
+  --shadow: 0 1px 2px rgba(24,43,66,.04), 0 5px 16px rgba(24,43,66,.055);
+  --shadow-lg: 0 12px 28px rgba(24,43,66,.12);
+}
+[data-theme="dark"] {
+  --navy: #111D2B;
+  --navy2: #1A2B3D;
+  --blue: #65B7C0;
+  --violet: #3B8991;
+  --text: #E6EDF4;
+  --muted: #A4B2C2;
+  --line: #314254;
+  --card: #1B2938;
+  --glass: rgba(23,36,50,.97);
+  --bg: #111B27;
+  --th: #223345;
+  --shadow: 0 1px 2px rgba(0,0,0,.18), 0 5px 16px rgba(0,0,0,.12);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,.25);
+}
+body {
+  background: var(--bg);
+  background-attachment: initial;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.topbar {
+  background: var(--navy);
+  box-shadow: 0 2px 8px rgba(10,25,42,.18);
+  min-height: 56px;
+  height: auto;
+  padding-block: 8px;
+}
+.brand { font-size: 16px; letter-spacing: .15px; }
+.brand img.logo { border-radius: 7px; box-shadow: none; }
+.crumb { color: #D1DCE7; }
+.modnav {
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 4px rgba(24,43,66,.035);
+  top: 56px;
+  padding-block: 8px;
+}
+.mico {
+  background: var(--blue);
+  box-shadow: none;
+}
+.modnav a.on {
+  background: var(--blue);
+  box-shadow: none;
+}
+.modnav a:hover { color: var(--blue); }
+main { max-width: 1600px; margin-inline: auto; padding: 22px 24px 44px; }
+.card, .tile, .stat, .tbl { border-radius: 10px; }
+.card { padding: 18px; }
+.tile { border-radius: 12px; box-shadow: var(--shadow); }
+.tile::after { display: none; }
+.tile:hover { transform: translateY(-2px); }
+.tile .ico { border-radius: 10px; box-shadow: none; }
+.tile:hover .ico { transform: none; }
+.hero { text-align: start; padding: 8px 0 12px; }
+.hero-t { color: var(--text); background: none; -webkit-text-fill-color: currentColor; font-size: 24px; }
+.hero-s { font-size: 13px; }
+.apps { max-width: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding-top: 12px; }
+.stats { gap: 12px; }
+.stat { border-radius: 10px; }
+.stat::before { background: var(--blue); }
+.stat:hover { transform: translateY(-1px); }
+.stat.on { box-shadow: inset 0 0 0 1px var(--blue); }
+.btn {
+  background: var(--blue);
+  box-shadow: none;
+  border-radius: 7px;
+  transition: background-color .15s, transform .15s;
+}
+.btn:hover { background: var(--navy2); box-shadow: none; transform: translateY(-1px); }
+.btn.ghost { border-radius: 7px; }
+.iconbtn { border-radius: 7px; }
+.tbl { border-radius: 10px; }
+.tbl th { font-size: 12px; letter-spacing: .1px; }
+.tbl th, .tbl td { padding: 10px 12px; }
+.tbl tbody tr:hover { background: color-mix(in srgb, var(--blue) 7%, var(--card)); }
+input, select, textarea { border-radius: 7px; min-height: 36px; }
+input[type="checkbox"] { min-height: auto; }
+.fgrid { gap: 14px 18px; }
+.fgrid label { font-size: 12px; }
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 50%, transparent);
+  outline-offset: 2px;
+}
+button:disabled, .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.dd-menu { border-radius: 10px; }
+#bulk { background: var(--navy); border-radius: 9px; }
+@media (max-width: 800px) {
+  main { padding: 16px 12px 32px; }
+  .topbar { gap: 7px; padding-inline: 10px; }
+  .modnav { top: 56px; }
+  .apps { grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 10px; }
+  .fgrid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .brand { font-size: 14px; }
+  main { padding-inline: 9px; }
+  .apps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modnav .mname { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise, .tile, .stat, .btn { animation: none; transition: none; }
+}
