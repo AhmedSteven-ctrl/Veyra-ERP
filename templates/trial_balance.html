@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load veyra_i18n %}
+{% block title %}{{ title|tr }}{% endblock %}
+{% block crumb %}<a href="{% url 'home' %}">{{ 'الرئيسية'|tr }}</a> › <b>{{ title|tr }}</b>{% endblock %}
+{% block modnav %}
+<nav class="modnav">
+  <span class="mname"><span class="mico">{{ icon }}</span>{{ title|tr }}</span>
+  {% for label, url in menus %}<a href="{% url url %}" class="{% if url == request.resolver_match.url_name %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
+</nav>
+{% endblock %}
+{% block content %}
+<div class="stats">
+  <div class="stat"><div class="c">{{ total_d }}</div><div class="l">{{ 'إجمالي المدين'|tr }}</div></div>
+  <div class="stat"><div class="c">{{ total_c }}</div><div class="l">{{ 'إجمالي الدائن'|tr }}</div></div>
+  <div class="stat {% if balanced %}on{% endif %}"><div class="c">{% if balanced %}✓{% else %}✗{% endif %}</div><div class="l">{% if balanced %}{{ 'متوازن'|tr }}{% else %}{{ 'غير متوازن'|tr }}{% endif %}</div></div>
+</div>
+<table class="tbl">
+  <thead><tr><th>{{ 'الكود'|tr }}</th><th>{{ 'الحساب'|tr }}</th><th>{{ 'مدين'|tr }}</th><th>{{ 'دائن'|tr }}</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td>{{ r.account.code }}</td><td>{{ r.account.name }}</td><td>{{ r.debit }}</td><td>{{ r.credit }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="empty">{{ 'لا توجد سجلات'|tr }}</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -15,4 +15,6 @@ def receive_order(order: PurchaseOrder, warehouse, user=None):
                 qty=line.qty, reference=order.number, user=user)
     order.status = "received"
     order.save(update_fields=["status", "updated_at"])
+    from accounting.services import post_purchase
+    post_purchase(order, user=user)
     return order

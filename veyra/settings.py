@@ -16,12 +16,20 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "inventory",
+    "accounting",
     "sales",
     "purchasing",
 ]
 
+try:
+    import whitenoise  # noqa: F401
+    WHITENOISE_OK = True
+except ImportError:
+    WHITENOISE_OK = False
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    *(["whitenoise.middleware.WhiteNoiseMiddleware"] if WHITENOISE_OK else []),
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",

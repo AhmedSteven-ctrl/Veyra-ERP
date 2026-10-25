@@ -25,6 +25,7 @@ class Product(TimeStampedModel):
     unit = models.CharField("الوحدة", max_length=20, default="قطعة")
     min_qty = models.DecimalField("حد إعادة الطلب", max_digits=14, decimal_places=3, default=Decimal("0"))
     sale_price = models.DecimalField("سعر البيع", max_digits=14, decimal_places=2, default=Decimal("0"))
+    cost = models.DecimalField("تكلفة الوحدة", max_digits=14, decimal_places=2, default=Decimal("0"))
 
     class Meta:
         unique_together = [("company", "code")]

@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: veyra
+      POSTGRES_USER: veyra
+      POSTGRES_PASSWORD: change-me-in-env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      VEYRA_DB: postgres
+      PG_NAME: veyra
+      PG_USER: veyra
+      PG_PASSWORD: change-me-in-env
+      PG_HOST: db
+      VEYRA_DEBUG: "0"
+      VEYRA_SECRET_KEY: change-me-to-a-long-random-value
+      VEYRA_HOSTS: localhost,127.0.0.1
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:

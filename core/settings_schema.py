@@ -101,22 +101,35 @@ def current_values(company, code):
     return out
 
 
+DESC = {
+    ("sales", "approval"): "أوامر البيع فوق الحد بتحتاج موافقة المدير",
+    ("sales", "lock_confirmed"): "مينفعش تعديل أمر مؤكد بعد الإنشاء",
+    ("purchasing", "min_quotes"): "قبل ما تطلب الشراء لازم تجيب عروض من عدد الموردين ده",
+    ("purchasing", "three_way"): "الدفع بيتم بعد مطابقة الأمر والاستلام والفاتورة",
+    ("accounting", "lock_closed"): "بعد إقفال الشهر، القيود بتتعدل بقيد تسوية بس",
+    ("accounting", "vat_method"): "الضريبة بتتحسب على كل بند أو على إجمالي الفاتورة",
+    ("inventory", "allow_negative"): "لو مفعّل، ممكن الرصيد يطلع بالسالب (مش مستحسن)",
+    ("contacts", "vip"): "علامة لتمييز العملاء المهمين",
+}
+
+
 def build_form(code, data=None, company=None):
     fields = {}
     initial = current_values(company, code) if company else {}
     for field in SCHEMA.get(code, []):
         key, label, kind, default, choices, _group = _spec(field)
         init = initial.get(key, default)
+        help_text = DESC.get((code, key), "")
         if kind == "bool":
-            fields[key] = forms.BooleanField(label=label, required=False, initial=init)
+            fields[key] = forms.BooleanField(label=label, required=False, initial=init, help_text=help_text)
         elif kind == "int":
-            fields[key] = forms.IntegerField(label=label, initial=init, min_value=0)
+            fields[key] = forms.IntegerField(label=label, initial=init, min_value=0, help_text=help_text)
         elif kind == "decimal":
-            fields[key] = forms.DecimalField(label=label, initial=init, min_value=Decimal("0"), max_digits=12, decimal_places=2)
+            fields[key] = forms.DecimalField(label=label, initial=init, min_value=Decimal("0"), max_digits=12, decimal_places=2, help_text=help_text)
         elif kind == "choice":
-            fields[key] = forms.ChoiceField(label=label, choices=choices, initial=init)
+            fields[key] = forms.ChoiceField(label=label, choices=choices, initial=init, help_text=help_text)
         else:
-            fields[key] = forms.CharField(label=label, initial=init, max_length=120)
+            fields[key] = forms.CharField(label=label, initial=init, max_length=120, help_text=help_text)
     FormClass = type(f"{code.title()}SettingsForm", (forms.Form,), fields)
     return FormClass(data) if data is not None else FormClass()
 

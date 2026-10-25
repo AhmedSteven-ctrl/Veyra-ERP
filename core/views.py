@@ -25,7 +25,7 @@ from .settings_schema import SCHEMA, build_form, grouped, save_values
 from .models import CompanyModule, Module, Partner
 
 # الشاشات المنفذة حالياً (كود المديول -> اسم الـ URL)
-IMPLEMENTED = {"inventory": "product_list", "sales": "sales_orders", "purchasing": "purchase_orders", "contacts": "partner_list", "settings": "settings_index"}
+IMPLEMENTED = {"inventory": "product_list", "sales": "sales_orders", "purchasing": "purchase_orders", "contacts": "partner_list", "settings": "settings_index", "accounting": "journal_list"}
 ICONS = {"inventory": "📦", "sales": "🧾", "purchasing": "🛒", "accounting": "📊", "contacts": "👤", "crm": "🤝",
          "employees": "👥", "manufacturing": "🏭", "quality": "✅", "maintenance": "🔧", "settings": "⚙"}
 PALETTE = [("#3D63F5", "#7A4DFF"), ("#0FAF7B", "#6EE7B7"), ("#F2A20C", "#FCD34D"), ("#E5484D", "#FCA5A5"),
@@ -35,6 +35,7 @@ MENUS = {
     "sales": [("أوامر البيع", "sales_orders")],
     "purchasing": [("أوامر الشراء", "purchase_orders")],
     "contacts": [("جهات الاتصال", "partner_list")],
+    "accounting": [("القيود اليومية", "journal_list"), ("ميزان المراجعة", "trial_balance")],
 }
 CREATE_URLS = {"inventory": "product_create", "sales": "sales_create", "purchasing": "purchase_create",
                "contacts": "partner_create"}

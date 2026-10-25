@@ -16,4 +16,6 @@ def deliver(order: SalesOrder, warehouse, user=None):
               qty=line.qty, reference=order.number, user=user)
     order.status = "delivered"
     order.save(update_fields=["status", "updated_at"])
+    from accounting.services import post_sale
+    post_sale(order, user=user)
     return order

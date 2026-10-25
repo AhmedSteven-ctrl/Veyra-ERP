@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -21,3 +22,27 @@ class User(AbstractUser):
         if self.is_company_manager:
             return True
         return self.allowed_modules.filter(code=code).exists()
+
+
+class UserProfile(models.Model):
+    """تفضيلات الحساب والمعلومات الشخصية (شاشة تفضيلاتي)."""
+    THEME = [("light", "فاتح"), ("dark", "داكن"), ("system", "حسب الجهاز")]
+    LANG = [("ar", "العربية"), ("en", "English")]
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+    language = models.CharField("اللغة", max_length=5, choices=LANG, default="ar")
+    theme = models.CharField("الوضع", max_length=10, choices=THEME, default="light")
+    timezone = models.CharField("المنطقة الزمنية", max_length=40, default="Africa/Cairo")
+    notify_email = models.BooleanField("إشعارات بالإيميل", default=True)
+    email_signature = models.TextField("توقيع الإيميل", blank=True)
+    work_location = models.CharField("مكان العمل", max_length=60, default="المكتب الرئيسي")
+    work_days = models.CharField("أيام العمل", max_length=20, default="0,1,2,3,4,5")  # 0=السبت
+    phone = models.CharField("الهاتف المحمول", max_length=30, blank=True)
+    private_address = models.CharField("العنوان الخاص", max_length=200, blank=True)
+    birth_date = models.DateField("تاريخ الميلاد", null=True, blank=True)
+    emergency_name = models.CharField("اسم جهة الاتصال للطوارئ", max_length=100, blank=True)
+    emergency_phone = models.CharField("هاتف الطوارئ", max_length=30, blank=True)
+    two_factor = models.BooleanField("التحقق بخطوتين", default=False)
+
+    def __str__(self):
+        return f"تفضيلات {self.user}"

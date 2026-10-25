@@ -8,6 +8,7 @@ URL_MODULE = {
     "purchase_edit": "purchasing",
     "partner_list": "contacts", "partner_create": "contacts", "partner_edit": "contacts",
     "settings_index": "settings", "settings_module": "settings",
+    "journal_list": "accounting", "trial_balance": "accounting",
 }
 
 
