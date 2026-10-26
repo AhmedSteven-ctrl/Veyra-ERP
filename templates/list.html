@@ -27,7 +27,7 @@
 {% block content %}
 <div class="stats">
   {% for s in stats %}
-  <a class="stat {% if s.active %}on{% endif %}" href="?f={{ s.key }}{% if q %}&q={{ q }}{% endif %}">
+  <a class="stat {% if s.active %}on{% endif %}" href="?f={{ s.key }}{% if q %}&q={{ q|urlencode }}{% endif %}">
     <div class="c">{{ s.count }}</div><div class="l">{{ s.label|tr }}</div>
   </a>
   {% endfor %}

@@ -1,8 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory
 
+from core.forms import OrderLineForm
 from core.models import Partner
-from inventory.models import Product
 
 from .models import SalesLine, SalesOrder
 
@@ -18,15 +18,15 @@ class SalesOrderForm(forms.ModelForm):
         self.fields["customer"].queryset = Partner.objects.filter(company=company, kind__in=["customer", "both"])
 
 
-class SalesLineForm(forms.ModelForm):
+class SalesLineForm(OrderLineForm):
+    price_field = "price"
+    price_default_from = "sale_price"
+
     class Meta:
         model = SalesLine
         fields = ["product", "qty", "price"]
         labels = {"product": "الصنف", "qty": "الكمية", "price": "السعر"}
 
-    def __init__(self, *args, company=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["product"].queryset = Product.objects.filter(company=company)
 
-
-SalesLineFormSet = inlineformset_factory(SalesOrder, SalesLine, form=SalesLineForm, extra=1, can_delete=True)
+SalesLineFormSet = inlineformset_factory(SalesOrder, SalesLine, form=SalesLineForm, extra=1,
+                                         min_num=1, validate_min=True, can_delete=True)

@@ -1,8 +1,8 @@
-from .models import CompanyModule, Module
+from .models import Module
 
 # اسم الشاشة (URL) -> كود المديول الرئيسي
 URL_MODULE = {
-    "product_list": "inventory", "product_detail": "inventory", "product_create": "inventory",
+    "product_list": "inventory", "product_detail": "inventory", "product_create": "inventory", "product_edit": "inventory",
     "sales_orders": "sales", "sales_detail": "sales", "sales_create": "sales", "sales_edit": "sales",
     "purchase_orders": "purchasing", "purchase_detail": "purchasing", "purchase_create": "purchasing",
     "purchase_edit": "purchasing",
@@ -21,7 +21,6 @@ def module_nav(request):
     code = URL_MODULE.get(match.url_name)
     if not code:
         return {"subs": []}
-    enabled = set(CompanyModule.objects.filter(company_id=user.company_id, enabled=True)
-                  .values_list("module__code", flat=True))
-    subs = [m for m in Module.objects.filter(parent__code=code) if m.code in enabled and user.can_access(m.code)]
+    allowed = user.accessible_codes()
+    subs = [m for m in Module.objects.filter(parent__code=code) if m.code in allowed]
     return {"subs": subs, "current_module": code}

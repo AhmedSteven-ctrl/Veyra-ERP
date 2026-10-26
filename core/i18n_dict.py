@@ -62,6 +62,14 @@ EN = {
 }
 
 
+# الباركود وتأكيد الأوامر وتكلفة الصنف
+EN.update({
+    "الباركود": "Barcode", "باركود": "Barcode", "تكلفة الوحدة": "Unit cost",
+    "تأكيد الأمر": "Confirm order", "تسليم وخصم من المخزن": "Deliver & issue stock",
+    "استلام وإدخال للمخزن": "Receive into stock", "تعديل": "Edit",
+})
+
+
 def translate(text, lang):
     if lang == "en":
         return EN.get(text, text)

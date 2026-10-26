@@ -22,6 +22,7 @@ class Product(TimeStampedModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="products")
     code = models.CharField("الكود", max_length=40)
     name = models.CharField("الاسم", max_length=150)
+    barcode = models.CharField("الباركود", max_length=64, blank=True, default="")
     unit = models.CharField("الوحدة", max_length=20, default="قطعة")
     min_qty = models.DecimalField("حد إعادة الطلب", max_digits=14, decimal_places=3, default=Decimal("0"))
     sale_price = models.DecimalField("سعر البيع", max_digits=14, decimal_places=2, default=Decimal("0"))
@@ -30,6 +31,11 @@ class Product(TimeStampedModel):
     class Meta:
         unique_together = [("company", "code")]
         ordering = ["name"]
+        constraints = [
+            # الباركود فريد جوه الشركة (الفاضي مسموح يتكرر)
+            models.UniqueConstraint(fields=["company", "barcode"], condition=~models.Q(barcode=""),
+                                    name="uniq_product_barcode_per_company"),
+        ]
 
     def __str__(self):
         return self.name

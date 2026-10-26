@@ -1,10 +1,23 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get("VEYRA_SECRET_KEY", "dev-only-change-me")
+_DEV_KEY = "dev-only-change-me"
+SECRET_KEY = os.environ.get("VEYRA_SECRET_KEY", _DEV_KEY)
 DEBUG = os.environ.get("VEYRA_DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.environ.get("VEYRA_HOSTS", "localhost,127.0.0.1").split(",")
+if not DEBUG and (SECRET_KEY == _DEV_KEY or SECRET_KEY.startswith("change-me")):
+    raise ImproperlyConfigured("حدد VEYRA_SECRET_KEY قيمة طويلة عشوائية قبل التشغيل بـ VEYRA_DEBUG=0")
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("VEYRA_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("VEYRA_CSRF_ORIGINS", "").split(",") if o.strip()]
+
+# وراء HTTPS (Nginx أو Caddy): VEYRA_HTTPS=1 يفعّل الكوكيز الآمنة والتحويل لـ HTTPS
+if os.environ.get("VEYRA_HTTPS") == "1":
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -35,6 +48,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.ForcePasswordChange",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -69,6 +83,12 @@ else:
     DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 
 AUTH_USER_MODEL = "accounts.User"
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"

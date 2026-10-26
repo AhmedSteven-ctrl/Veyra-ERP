@@ -8,6 +8,18 @@ class User(AbstractUser):
                                 on_delete=models.PROTECT, related_name="users")
     is_company_manager = models.BooleanField("مدير الشركة", default=False)
     allowed_modules = models.ManyToManyField("core.Module", blank=True, related_name="users")
+    must_change_password = models.BooleanField("لازم يغيّر كلمة المرور", default=False)
+
+    def accessible_codes(self):
+        """أكواد المديولات اللي يقدر يفتحها (للشاشات اللي بتعرض قايمة): استعلامين بدل استعلام لكل مديول."""
+        if not self.company_id:
+            return set()
+        from core.models import CompanyModule
+        enabled = set(CompanyModule.objects.filter(company_id=self.company_id, enabled=True)
+                      .values_list("module__code", flat=True))
+        if self.is_superuser or self.is_company_manager:
+            return enabled
+        return enabled & set(self.allowed_modules.values_list("code", flat=True))
 
     def can_access(self, code):
         """المالك (superuser) يشوف كل حاجة. غير كده: المديول لازم يكون مفعّل للشركة،

@@ -22,7 +22,7 @@ python manage.py runserver
 git status
 git add .
 git commit -m "Update Veyra ERP"
-
+git push origin feat/classic-bilingual-ui
 
 git add . && git commit -m "Update Veyra ERP" && git push origin main
 

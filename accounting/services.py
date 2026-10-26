@@ -67,7 +67,7 @@ def post_sale(order, user=None):
 def post_purchase(order, user=None):
     """بعد الاستلام: مدين المخزون + ضريبة المدخلات، ودائن الموردين."""
     company = order.company
-    rate = current_values(company, "accounting")["default_tax"] / Decimal("100")
+    rate = current_values(company, "accounting")["default_purchase_tax"] / Decimal("100")
     net = _money(order.total)
     vat = _money(net * rate)
     lines = [("1300", net, 0), ("1400", vat, 0), ("2100", 0, net + vat)]
