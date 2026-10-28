@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--company", default="ALNOOR", help="كود الشركة (الافتراضي ALNOOR)")
-        parser.add_argument("--user", default="ahmed", help="اسم المستخدم اللي هيبقى مدير (الافتراضي ahmed). لو عايز حساب admin يدخل التطبيق: --user admin")
+        parser.add_argument("--user", default="admin", help="اسم المستخدم اللي هيبقى مدير (الافتراضي admin)")
 
     def handle(self, *args, **opts):
         from django.contrib.auth import get_user_model

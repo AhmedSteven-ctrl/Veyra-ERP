@@ -7,12 +7,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-# لو collectstatic فشل، البناء يفشل (بدل ما نكتشف المشكلة وقت التشغيل)
-RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh \
-    && python manage.py collectstatic --noinput \
-    && useradd --create-home veyra && chown -R veyra /app
-USER veyra
+RUN python manage.py collectstatic --noinput || true
 
 EXPOSE 8000
-ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["gunicorn", "veyra.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]

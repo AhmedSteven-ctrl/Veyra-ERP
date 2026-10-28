@@ -1,35 +1,26 @@
-# الأسرار بتتقرا من ملف .env جنب الملف ده (انسخ .env.example إلى .env واملاه)
 services:
   db:
     image: postgres:16
     environment:
       POSTGRES_DB: veyra
       POSTGRES_USER: veyra
-      POSTGRES_PASSWORD: ${PG_PASSWORD:?حدد PG_PASSWORD في ملف .env}
+      POSTGRES_PASSWORD: change-me-in-env
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U veyra -d veyra"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
 
   web:
     build: .
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       VEYRA_DB: postgres
       PG_NAME: veyra
       PG_USER: veyra
-      PG_PASSWORD: ${PG_PASSWORD:?حدد PG_PASSWORD في ملف .env}
+      PG_PASSWORD: change-me-in-env
       PG_HOST: db
       VEYRA_DEBUG: "0"
-      VEYRA_SECRET_KEY: ${VEYRA_SECRET_KEY:?حدد VEYRA_SECRET_KEY في ملف .env}
-      VEYRA_HOSTS: ${VEYRA_HOSTS:-localhost,127.0.0.1}
-      VEYRA_CSRF_ORIGINS: ${VEYRA_CSRF_ORIGINS:-}
-      VEYRA_HTTPS: ${VEYRA_HTTPS:-0}
+      VEYRA_SECRET_KEY: change-me-to-a-long-random-value
+      VEYRA_HOSTS: localhost,127.0.0.1
     ports:
       - "8000:8000"
 

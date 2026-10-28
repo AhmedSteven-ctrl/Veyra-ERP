@@ -64,6 +64,21 @@ class Partner(TimeStampedModel):
 
 
 class ModuleSetting(TimeStampedModel):
+    """إعدادات كل مديول لوحده لكل شركة (مثلاً: ترقيم الفواتير، الضريبة، المخزن الافتراضي)."""
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="module_settings")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="settings")
+    key = models.CharField("الإعداد", max_length=60)
+    value = models.JSONField("القيمة", default=dict, blank=True)
+
+    class Meta:
+        unique_together = [("company", "module", "key")]
+        ordering = ["module__sort", "key"]
+
+    def __str__(self):
+        return f"{self.module.name}: {self.key}"
+
+
+class ModuleSetting(TimeStampedModel):
     """إعدادات كل مديول لكل شركة (مفتاح = قيمة). القيم الافتراضية في core/settings_schema.py."""
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="module_settings")
     module = models.CharField(max_length=40)

@@ -1,28 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import PasswordChangeView
 from django.contrib.sessions.models import Session
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import CalendarForm, PreferencesForm, PrivateForm
 from .models import UserProfile
-
-class VeyraPasswordChangeView(PasswordChangeView):
-    """تغيير كلمة المرور. أول ما تتغير بنجاح بنشيل علامة "لازم يغيّر كلمة المرور" من الحساب."""
-    template_name = "password_change.html"
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        user = form.user
-        if user.must_change_password:
-            user.must_change_password = False
-            user.save(update_fields=["must_change_password"])
-        return response
-
 
 TABS = [("prefs", "التفضيلات"), ("calendar", "التقويم"), ("private", "خاص"), ("security", "الأمان")]
 

@@ -18,7 +18,7 @@ CHART = [
     ("4000", "إيرادات المبيعات", "income"),
     ("5000", "تكلفة البضاعة المباعة", "expense"),
 ]
-JOURNALS = [("SAL", "يومية المبيعات"), ("PUR", "يومية المشتريات"), ("PAY", "يومية المدفوعات")]
+JOURNALS = [("SAL", "يومية المبيعات"), ("PUR", "يومية المشتريات")]
 
 
 def _money(value):
@@ -64,31 +64,14 @@ def post_sale(order, user=None):
     return _post(company, "SAL", order.number, f"فاتورة بيع {order.number}", lines, user)
 
 
-def purchase_amounts(order):
-    """(الصافي، الضريبة، الإجمالي) لأمر الشراء بنسبة ضريبة المشتريات الحالية."""
-    rate = current_values(order.company, "accounting")["default_purchase_tax"] / Decimal("100")
+def post_purchase(order, user=None):
+    """بعد الاستلام: مدين المخزون + ضريبة المدخلات، ودائن الموردين."""
+    company = order.company
+    rate = current_values(company, "accounting")["default_tax"] / Decimal("100")
     net = _money(order.total)
     vat = _money(net * rate)
-    return net, vat, net + vat
-
-
-def post_purchase(order, user=None, amounts=None):
-    """بعد الاستلام: مدين المخزون + ضريبة المدخلات، ودائن الموردين. الأمر بإجمالي صفر مفيهوش قيد.
-    amounts = (الصافي، الضريبة، الإجمالي) لو الاستلام حسبها قبل كده، عشان نفس الأرقام تتسجّل في القيد وفي الأمر."""
-    net, vat, total = amounts or purchase_amounts(order)
-    if total == 0:
-        return None
-    lines = [("1300", net, 0), ("1400", vat, 0), ("2100", 0, total)]
-    return _post(order.company, "PUR", order.number, f"استلام {order.number}", lines, user)
-
-
-def post_supplier_payment(payment, user=None):
-    """دفعة للمورد: مدين الموردين، دائن النقدية والبنك. لكل دفعة مرجع خاص بيها."""
-    order = payment.order
-    amount = _money(payment.amount)
-    lines = [("2100", amount, 0), ("1010", 0, amount)]
-    return _post(order.company, "PAY", f"{order.number}-P{payment.pk}",
-                 f"دفعة للمورد على الأمر {order.number}", lines, user)
+    lines = [("1300", net, 0), ("1400", vat, 0), ("2100", 0, net + vat)]
+    return _post(company, "PUR", order.number, f"استلام {order.number}", lines, user)
 
 
 def trial_balance(company):

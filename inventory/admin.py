@@ -10,9 +10,8 @@ class WarehouseAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "barcode", "company", "sale_price")
+    list_display = ("name", "code", "company", "sale_price")
     list_filter = ("company",)
-    search_fields = ("name", "code", "barcode")
 
 
 @admin.register(StockMove)

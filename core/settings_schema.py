@@ -45,7 +45,7 @@ SCHEMA = {
         ("currency", "العملة الرئيسية", "text", "EGP", None, "العملة والسنة"),
         ("fiscal_start", "بداية السنة المالية (رقم الشهر)", "int", 1, None, "العملة والسنة"),
         ("lock_closed", "منع الترحيل في الفترة المقفولة", "bool", True, None, "العملة والسنة"),
-        ("default_purchase_tax", "ضريبة المشتريات الافتراضية %", "decimal", Decimal("14"), None, "الضرائب"),
+        ("default_tax", "ضريبة المبيعات الافتراضية %", "decimal", Decimal("14"), None, "الضرائب"),
         ("vat_method", "طريقة حساب الضريبة", "choice", "line", [("line", "لكل بند"), ("invoice", "على الفاتورة")], "الضرائب"),
         ("cash_basis", "الضرائب على أساس نقدي", "bool", False, None, "الضرائب"),
         ("e_invoice", "الفاتورة الإلكترونية", "bool", False, None, "الفواتير والتقارير"),
@@ -70,7 +70,7 @@ SCHEMA = {
         ("leave_approval", "اعتماد المدير المباشر للإجازة", "bool", True, None, "الإجازات"),
     ],
     "settings": [
-        ("company_name", "اسم الشركة", "text", "", None, "الشركة"),
+        ("company_name", "اسم الشركة", "text", "شركة النور للتجارة", None, "الشركة"),
         ("language", "اللغة الافتراضية", "choice", "ar", [("ar", "العربية"), ("en", "English")], "اللغة والمظهر"),
         ("theme", "الوضع الافتراضي", "choice", "light", [("light", "فاتح"), ("dark", "داكن")], "اللغة والمظهر"),
     ],
@@ -98,8 +98,6 @@ def current_values(company, code):
                 out[key] = raw
         else:
             out[key] = default
-    if code == "settings" and not out.get("company_name"):
-        out["company_name"] = company.name
     return out
 
 
@@ -111,11 +109,6 @@ DESC = {
     ("accounting", "lock_closed"): "بعد إقفال الشهر، القيود بتتعدل بقيد تسوية بس",
     ("accounting", "vat_method"): "الضريبة بتتحسب على كل بند أو على إجمالي الفاتورة",
     ("inventory", "allow_negative"): "لو مفعّل، ممكن الرصيد يطلع بالسالب (مش مستحسن)",
-    ("inventory", "valuation"): "المتوسط المرجح هو المطبّق حاليًا (بيتحدّث مع كل استلام)، FIFO قريبًا",
-    ("sales", "prefix"): "بادئة ترقيم أوامر البيع الجديدة (مثال: SO-0001)",
-    ("purchasing", "prefix"): "بادئة ترقيم أوامر الشراء الجديدة (مثال: PO-0001)",
-    ("accounting", "default_purchase_tax"): "بتتحسب على أوامر الشراء عند الاستلام (ضريبة المدخلات)",
-    ("sales", "tax_rate"): "بتتحسب على أوامر البيع عند التسليم (ضريبة المخرجات)",
     ("contacts", "vip"): "علامة لتمييز العملاء المهمين",
 }
 
