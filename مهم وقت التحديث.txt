@@ -1,0 +1,10 @@
+لو عدّلت موديلات قاعدة البيانات مستقبلًا، نفّذ الأوامر دي يدويًا وقت التحديث فقط:
+
+
+.venv\Scripts\python.exe manage.py makemigrations
+.venv\Scripts\python.exe manage.py migrate
+
+
+
+ولو البرنامج محتاج تهيئة الموديولات لأول مرة فقط، نفّذ:
+.venv\Scripts\python.exe manage.py seed_modules
