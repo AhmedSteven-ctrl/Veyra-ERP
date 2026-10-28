@@ -18,6 +18,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         call_command("seed_modules", verbosity=0)
+        call_command("seed_chart_of_accounts", verbosity=0)
         User = get_user_model()
         company, _ = Company.objects.get_or_create(code="ALNOOR", defaults={"name": "شركة النور للتجارة"})
 

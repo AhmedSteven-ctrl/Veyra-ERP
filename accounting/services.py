@@ -83,3 +83,15 @@ def trial_balance(company):
     total_d = sum((r["debit"] for r in rows), Decimal("0"))
     total_c = sum((r["credit"] for r in rows), Decimal("0"))
     return rows, total_d, total_c
+
+def post_sale_return(order, return_number, user=None):
+    """قيد مرتجع المبيعات: عكس قيد المبيعات (دائن العملاء، مدين المرتجعات، ودائن تكلفة المباع مقابل مدين المخزون)."""
+    company = order.company
+    rate = current_values(company, "sales")["tax_rate"] / Decimal("100")
+    net = _money(order.total)
+    vat = _money(net * rate)
+    cost = _money(sum((l.qty * l.product.cost for l in order.lines.select_related("product")), Decimal("0")))
+    lines = [("1200", 0, net + vat), ("4000", net, 0), ("2200", vat, 0)]
+    if cost:
+        lines += [("5000", 0, cost), ("1300", cost, 0)]
+    return _post(company, "SAL", return_number, f"مرتجع مبيعات {order.number}", lines, user)

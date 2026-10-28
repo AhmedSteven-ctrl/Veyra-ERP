@@ -3,11 +3,68 @@
 {% load veyra_i18n %}
 {% block title %}{{ title|tr }}{% endblock %}
 {% block crumb %}<span>{{ 'الرئيسية'|tr }}</span> › <b>{{ title|tr }}</b>{% endblock %}
+
 {% block modnav %}
-<nav class="modnav">
-  <span class="mname"><span class="mico">{{ icon|safe }}</span>{{ title|tr }}</span>
+<nav class="modnav" style="gap:12px">
+  <span class="mname"><span class="mico" style="background:linear-gradient(135deg,#2E7D32,#4CAF50)">🛒</span> {{ 'الشراء'|tr }}</span>
+  
+  {% if code == 'purchasing' %}
+  <!-- القائمة المنسدلة: الطلبات -->
+  <details class="dd">
+    <summary class="nav-tab {% if request.resolver_match.url_name == 'purchase_orders' %}active-tab{% endif %}" style="cursor:pointer;padding:6px 12px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;color:var(--text)">
+      {{ 'الطلبات'|tr }} ▾
+    </summary>
+    <div class="dd-menu" style="min-width:180px;margin-top:6px">
+      <a href="{% url 'purchase_orders' %}?f=draft">📄 {{ 'طلبات عروض الأسعار'|tr }}</a>
+      <a href="{% url 'purchase_orders' %}?f=confirmed">📦 {{ 'أوامر الشراء'|tr }}</a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">📝 {{ 'اتفاقيات الشراء'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+      <div class="dd-sep"></div>
+      <a href="{% url 'partner_list' %}">👤 {{ 'الموردين'|tr }}</a>
+    </div>
+  </details>
+
+  <!-- القائمة المنسدلة: المنتجات -->
+  <details class="dd">
+    <summary class="nav-tab {% if request.resolver_match.url_name == 'product_list' %}active-tab{% endif %}" style="cursor:pointer;padding:6px 12px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;color:var(--text)">
+      {{ 'المنتجات'|tr }} ▾
+    </summary>
+    <div class="dd-menu" style="min-width:160px;margin-top:6px">
+      <a href="{% url 'product_list' %}">📦 {{ 'المنتجات'|tr }}</a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">🏷 {{ 'متغيرات المنتجات'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+    </div>
+  </details>
+
+  <!-- القائمة المنسدلة: إعداد التقارير -->
+  <details class="dd">
+    <summary class="nav-tab" style="cursor:pointer;padding:6px 12px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;color:var(--text)">
+      {{ 'إعداد التقارير'|tr }} ▾
+    </summary>
+    <div class="dd-menu" style="min-width:160px;margin-top:6px">
+      <a href="#" style="opacity:.6;cursor:not-allowed">📊 {{ 'تحليلات المشتريات'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+    </div>
+  </details>
+
+  <!-- القائمة المنسدلة: التهيئة (المطابقة تماماً للصورة الثانية) -->
+  <details class="dd">
+    <summary class="nav-tab active-tab" style="cursor:pointer;padding:6px 12px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(76,175,80,.4);background:rgba(76,175,80,.12);color:var(--text)">
+      {{ 'التهيئة'|tr }} ▾
+    </summary>
+    <div class="dd-menu" style="min-width:180px;margin-top:6px">
+      <a href="{% url 'settings_module' 'purchasing' %}">⚙ {{ 'الإعدادات'|tr }}</a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">🏷 {{ 'قوائم أسعار المورد'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+      <div class="dd-sep"></div>
+      <a href="{% url 'product_list' %}">📦 {{ 'المنتجات'|tr }}</a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">⚡ {{ 'الخصائص'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">📂 {{ 'الفئات'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+      <a href="#" style="opacity:.6;cursor:not-allowed">⚖ {{ 'الوحدات والتغليف'|tr }} <span class="soon-tag">{{ 'قريباً'|tr }}</span></a>
+    </div>
+  </details>
+
+  {% else %}
   {% for label, url in menus %}<a href="{% url url %}" class="{% if url == request.resolver_match.url_name %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
   {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
+  {% endif %}
+
   <span class="sp"></span>
   {% if create_url %}<a class="btn sm" href="{% url create_url %}">+ {{ 'جديد'|tr }}</a>{% endif %}
   <details class="dd">
@@ -24,6 +81,7 @@
   </form>
 </nav>
 {% endblock %}
+
 {% block content %}
 <div class="stats">
   {% for s in stats %}
