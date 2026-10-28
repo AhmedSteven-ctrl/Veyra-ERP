@@ -9,6 +9,13 @@
   {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
   <span class="sp"></span>
   <a class="btn ghost sm" href="javascript:history.back()">{{ 'رجوع'|tr }}</a>
+  {% for a in actions %}
+    {% if a.post %}
+    <form method="post" action="{% url a.url obj.pk %}" style="margin:0;display:inline"{% if a.confirm %} onsubmit="return confirm('{{ a.confirm|tr|escapejs }}')"{% endif %}>{% csrf_token %}
+      <button class="btn sm {% if a.url == 'purchase_cancel' %}ghost{% endif %}" type="submit">{{ a.label|tr }}</button>
+    </form>
+    {% else %}<a class="btn sm" href="{% url a.url obj.pk %}">{{ a.label|tr }}</a>{% endif %}
+  {% endfor %}
   {% if edit_url %}<a class="btn sm" href="{% url edit_url obj.pk %}">{{ 'تعديل'|tr }}</a>{% endif %}
 </nav>
 {% endblock %}
@@ -47,4 +54,14 @@
   </table>
 </div>
 {% endif %}
+
+{% for t in tables %}
+<div class="card" style="margin-bottom:12px">
+  <h3 style="margin:0 0 8px;font-size:14px">{{ t.title|tr }}</h3>
+  <table class="tbl">
+    <thead><tr>{% for c in t.cols %}<th>{{ c|tr }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in t.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+</div>
+{% endfor %}
 {% endblock %}

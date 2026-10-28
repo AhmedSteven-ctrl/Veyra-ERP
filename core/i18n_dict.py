@@ -70,6 +70,20 @@ EN.update({
 })
 
 
+# المشتريات: الإلغاء والدفعات (بنضيف بس اللي مش موجود)
+for _ar, _en in {
+    "ملغي": "Cancelled", "إلغاء الأمر": "Cancel order", "تسجيل دفعة": "Record payment",
+    "مدفوعات الموردين": "Supplier payments", "الدفعات": "Payments", "المبلغ": "Amount",
+    "طريقة الدفع": "Payment method", "الطريقة": "Method", "ملاحظة": "Note", "ملاحظات": "Notes",
+    "المستحق للمورد": "Amount due to supplier", "المدفوع": "Paid", "المتبقي": "Remaining",
+    "حالة الدفع": "Payment status", "الدفع": "Payment", "غير مدفوع": "Unpaid",
+    "مدفوع جزئياً": "Partially paid", "مدفوع": "Paid in full", "نقدي": "Cash", "تحويل بنكي": "Bank transfer",
+    "تاريخ الاستلام المتوقع": "Expected receipt date", "المورد": "Supplier", "الأمر": "Order",
+    "التاريخ": "Date", "هتلغي الأمر ده. متأكد؟": "You are about to cancel this order. Sure?",
+}.items():
+    EN.setdefault(_ar, _en)
+
+
 def translate(text, lang):
     if lang == "en":
         return EN.get(text, text)

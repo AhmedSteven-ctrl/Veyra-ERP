@@ -5,7 +5,7 @@ URL_MODULE = {
     "product_list": "inventory", "product_detail": "inventory", "product_create": "inventory", "product_edit": "inventory",
     "sales_orders": "sales", "sales_detail": "sales", "sales_create": "sales", "sales_edit": "sales",
     "purchase_orders": "purchasing", "purchase_detail": "purchasing", "purchase_create": "purchasing",
-    "purchase_edit": "purchasing",
+    "purchase_edit": "purchasing", "purchase_pay": "purchasing", "purchase_payments": "purchasing",
     "partner_list": "contacts", "partner_create": "contacts", "partner_edit": "contacts",
     "settings_index": "settings", "settings_module": "settings",
     "journal_list": "accounting", "trial_balance": "accounting",

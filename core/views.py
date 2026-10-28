@@ -11,10 +11,11 @@ from django.views.decorators.http import require_POST
 from inventory.forms import ProductForm
 from inventory.models import Product, Warehouse
 from inventory.services import StockError
-from purchasing.forms import PurchaseLineFormSet, PurchaseOrderForm
-from purchasing.models import PurchaseOrder
+from purchasing.forms import PurchaseLineFormSet, PurchaseOrderForm, PurchasePaymentForm
+from purchasing.models import PAYMENT_LABELS, PurchaseOrder, PurchasePayment, payment_state
+from purchasing.services import cancel_order as cancel_purchase
 from purchasing.services import confirm_order as confirm_purchase
-from purchasing.services import receive_order
+from purchasing.services import pay_order, receive_order
 from sales.forms import SalesLineFormSet, SalesOrderForm
 from sales.models import SalesOrder
 from sales.services import confirm_order as confirm_sale
@@ -35,7 +36,7 @@ PALETTE = [("#3D63F5", "#7A4DFF"), ("#0FAF7B", "#6EE7B7"), ("#F2A20C", "#FCD34D"
 MENUS = {
     "inventory": [("المنتجات والأرصدة", "product_list")],
     "sales": [("أوامر البيع", "sales_orders")],
-    "purchasing": [("أوامر الشراء", "purchase_orders")],
+    "purchasing": [("أوامر الشراء", "purchase_orders"), ("مدفوعات الموردين", "purchase_payments")],
     "contacts": [("جهات الاتصال", "partner_list")],
     "accounting": [("القيود اليومية", "journal_list"), ("ميزان المراجعة", "trial_balance")],
 }
@@ -109,21 +110,54 @@ def sales_detail(request, pk):
     })
 
 
+def _purchase_actions(order, user):
+    """الأزرار المتاحة على أمر الشراء حسب حالته وصلاحيات المستخدم."""
+    actions = []
+    if order.status == "draft":
+        actions.append({"url": "purchase_confirm", "label": "تأكيد الأمر", "post": True})
+    if order.status == "confirmed":
+        actions.append({"url": "purchase_receive", "label": "استلام وإدخال للمخزن", "post": True})
+    if order.status in ("draft", "confirmed"):
+        actions.append({"url": "purchase_cancel", "label": "إلغاء الأمر", "post": True,
+                        "confirm": "هتلغي الأمر ده. متأكد؟"})
+    if order.status == "received" and order.balance > 0 and user.can_access("accounting"):
+        actions.append({"url": "purchase_pay", "label": "تسجيل دفعة", "post": False})
+    return actions
+
+
 @module_required("purchasing")
 def purchase_detail(request, pk):
     order = get_object_or_404(PurchaseOrder, pk=pk, company=request.user.company)
     fields = [("الرقم", order.number), ("المورد", order.supplier.name), ("الإجمالي", order.total)]
+    if order.status == "cancelled":
+        fields.append(("الحالة", "ملغي"))
+    if order.expected_date:
+        fields.append(("تاريخ الاستلام المتوقع", order.expected_date))
+    if order.status == "received":
+        paid = order.paid
+        fields += [("المستحق للمورد", order.billed_total), ("المدفوع", paid),
+                   ("المتبقي", order.billed_total - paid),
+                   ("حالة الدفع", PAYMENT_LABELS[payment_state(order.billed_total, paid)])]
+    if order.notes:
+        fields.append(("ملاحظات", order.notes))
     lines = [(l.product.name, l.qty, l.cost, l.subtotal) for l in order.lines.select_related("product")]
+    method_labels = dict(PurchasePayment.METHODS)
+    pay_rows = [(p.created_at.strftime("%Y-%m-%d"), p.amount, method_labels.get(p.method, p.method), p.note or "—")
+                for p in order.payments.all()]
+    tables = [{"title": "الدفعات", "cols": ["التاريخ", "المبلغ", "الطريقة", "ملاحظة"], "rows": pay_rows}] if pay_rows else []
+    steps = [] if order.status == "cancelled" else _steps([x for x in PurchaseOrder.STATUS if x[0] != "cancelled"], order.status)
     return render(request, "detail.html", {
-        "code": "purchasing", "title": order.number, "obj": order, "fields": fields, "edit_url": "purchase_edit",
-        "steps": _steps(PurchaseOrder.STATUS, order.status), "lines": lines,
+        "code": "purchasing", "title": order.number, "obj": order, "fields": fields,
+        "edit_url": "purchase_edit" if order.status in ("draft", "confirmed") else None,
+        "actions": _purchase_actions(order, request.user), "tables": tables,
+        "steps": steps, "lines": lines,
         "line_cols": ["الصنف", "الكمية", "التكلفة", "الإجمالي"], "extra": [],
         "menus": MENUS.get("purchasing", []), "icon": svg_for("purchasing"),
     })
 
 
-def _list_page(request, *, code, title, columns, rows, statuses):
-    create_url = CREATE_URLS.get(code)
+def _list_page(request, *, code, title, columns, rows, statuses, create=True):
+    create_url = CREATE_URLS.get(code) if create else None
     f = request.GET.get("f", "")
     q = request.GET.get("q", "").strip()
     labels = dict(statuses)
@@ -194,13 +228,31 @@ def sales_confirm(request, pk):
 
 @module_required("purchasing")
 def purchase_orders(request):
-    orders = PurchaseOrder.objects.filter(company=request.user.company).select_related("supplier")
-    rows = [{"id": o.id, "s": o.status, "detail": "purchase_detail", "cells": [o.number, o.supplier.name, o.total],
+    orders = (PurchaseOrder.objects.filter(company=request.user.company).select_related("supplier")
+              .annotate(paid_sum=Coalesce(Sum("payments__amount"), Decimal("0"))))
+    rows = [{"id": o.id, "s": o.status, "detail": "purchase_detail",
+             "cells": [o.number, o.supplier.name, o.total,
+                       PAYMENT_LABELS[payment_state(o.billed_total, o.paid_sum)] if o.status == "received" else "—"],
              "action": PURCHASE_ACTIONS.get(o.status)}
             for o in orders]
     return _list_page(request, code="purchasing", title="الشراء", rows=rows,
-                      columns=["الرقم", "المورد", "الإجمالي"],
-                      statuses=[("draft", "مسودة"), ("confirmed", "بانتظار الاستلام"), ("received", "مستلم")])
+                      columns=["الرقم", "المورد", "الإجمالي", "الدفع"],
+                      statuses=[("draft", "مسودة"), ("confirmed", "بانتظار الاستلام"), ("received", "مستلم"),
+                                ("cancelled", "ملغي")])
+
+
+@module_required("purchasing")
+def purchase_payments(request):
+    payments = (PurchasePayment.objects.filter(order__company=request.user.company)
+                .select_related("order__supplier"))
+    method_labels = dict(PurchasePayment.METHODS)
+    rows = [{"id": p.order_id, "s": p.method, "detail": "purchase_detail",
+             "cells": [p.order.number, p.order.supplier.name, p.amount, method_labels.get(p.method, p.method),
+                       p.created_at.strftime("%Y-%m-%d")]}
+            for p in payments]
+    return _list_page(request, code="purchasing", title="مدفوعات الموردين", rows=rows,
+                      columns=["الأمر", "المورد", "المبلغ", "الطريقة", "التاريخ"],
+                      statuses=list(PurchasePayment.METHODS), create=False)
 
 
 @module_required("purchasing")
@@ -225,6 +277,41 @@ def purchase_confirm(request, pk):
     except ValueError as exc:
         messages.error(request, str(exc))
     return redirect("purchase_orders")
+
+
+@module_required("purchasing")
+@require_POST
+def purchase_cancel(request, pk):
+    order = get_object_or_404(PurchaseOrder, pk=pk, company=request.user.company)
+    try:
+        cancel_purchase(order)
+        messages.success(request, f"تم إلغاء الأمر {order.number}")
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    return redirect("purchase_detail", pk=pk)
+
+
+@module_required("purchasing")
+def purchase_pay(request, pk):
+    """تسجيل دفعة للمورد. بيعمل قيد محاسبي، فلازم المستخدم يكون له صلاحية المحاسبة كمان."""
+    if not request.user.can_access("accounting"):
+        raise PermissionDenied
+    order = get_object_or_404(PurchaseOrder, pk=pk, company=request.user.company)
+    if order.status != "received" or order.balance <= 0:
+        messages.error(request, "مفيش مبلغ مستحق للمورد على الأمر ده")
+        return redirect("purchase_detail", pk=pk)
+    form = PurchasePaymentForm(request.POST or None, order=order)
+    if request.method == "POST" and form.is_valid():
+        try:
+            payment = pay_order(order, form.cleaned_data["amount"], method=form.cleaned_data["method"],
+                                note=form.cleaned_data["note"], user=request.user)
+        except ValueError as exc:
+            form.add_error(None, str(exc))
+        else:
+            messages.success(request, f"تم تسجيل دفعة {payment.amount} للأمر {order.number}")
+            return redirect("purchase_detail", pk=pk)
+    return _render_form(request, code="purchasing", title=f"دفعة للأمر {order.number}", form=form,
+                        back_url="purchase_orders")
 
 
 # ================= الإنشاء والتعديل من الشاشة =================
@@ -379,8 +466,8 @@ def purchase_create(request):
 def purchase_edit(request, pk):
     company = request.user.company
     order = get_object_or_404(PurchaseOrder, pk=pk, company=company)
-    if order.status == "received":
-        messages.error(request, "الأمر اتستلم، مينفعش يتعدل")
+    if order.status in ("received", "cancelled"):
+        messages.error(request, "الأمر اتستلم، مينفعش يتعدل" if order.status == "received" else "الأمر ملغي، مينفعش يتعدل")
         return redirect("purchase_detail", pk=pk)
     form = PurchaseOrderForm(request.POST or None, instance=order, company=company)
     formset = PurchaseLineFormSet(request.POST or None, instance=order, form_kwargs={"company": company})

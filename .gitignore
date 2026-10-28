@@ -4,3 +4,10 @@ __pycache__/
 db.sqlite3
 staticfiles/
 .env
+.venv/
+db.sqlite3
+*.sqlite3
+.env
+__pycache__/
+*.py[cod]
+"Veyra ERP.zip"
