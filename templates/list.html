@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% load veyra_i18n %}
+{% block title %}{{ title|tr }}{% endblock %}
+{% block crumb %}<span>{{ 'الرئيسية'|tr }}</span> › <b>{{ title|tr }}</b>{% endblock %}
+{% block modnav %}
+<nav class="modnav">
+  <span class="mname"><span class="mico">{{ icon|safe }}</span>{{ title|tr }}</span>
+  {% for label, url in menus %}<a href="{% url url %}" class="{% if url == request.resolver_match.url_name %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
+  {% for s in subs %}<span class="sub">{{ s.name|tr }}<span class="soon-tag">{{ 'قريباً'|tr }}</span></span>{% endfor %}
+  <span class="sp"></span>
+  {% for label, url in creates %}<a class="btn sm{% if not forloop.first %} ghost{% endif %}" href="{% url url %}">{% if forloop.first and "create" in url %}+ {% endif %}{{ label|tr }}</a>{% endfor %}
+  {% for label, url, confirm_text in post_actions %}
+  <form method="post" action="{% url url %}" style="margin:0;display:inline" onsubmit="return confirm('{{ confirm_text|tr|escapejs }}')">{% csrf_token %}
+    <button class="btn ghost sm" type="submit">{{ label|tr }}</button>
+  </form>
+  {% endfor %}
+  <details class="dd">
+    <summary class="btn ghost sm">{{ '⋯ إجراءات'|tr }}</summary>
+    <div class="dd-menu">
+      <a href="javascript:window.print()">🖨 {{ 'طباعة'|tr }}</a>
+      <a href="#" onclick="exportSelected();return false;">⬇ {{ 'تصدير المحدد CSV'|tr }}</a>
+      <a href="#" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=true);updateBulk();return false;">☑ {{ 'تحديد الكل'|tr }}</a>
+    </div>
+  </details>
+  <form method="get" style="margin:0">
+    <input class="search" style="color:var(--text);background:var(--card);border-color:var(--line);width:170px" name="q" value="{{ q }}" placeholder="{{ 'بحث...'|tr }}">
+    {% if request.GET.f %}<input type="hidden" name="f" value="{{ request.GET.f }}">{% endif %}
+  </form>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="stats">
+  {% for s in stats %}
+  <a class="stat {% if s.active %}on{% endif %}" href="?f={{ s.key }}{% if q %}&q={{ q|urlencode }}{% endif %}">
+    <div class="c">{{ s.count }}</div><div class="l">{{ s.label|tr }}</div>
+  </a>
+  {% endfor %}
+</div>
+
+<div id="bulk" class="hidden">
+  <b><span id="bulk-count">0</span> {{ 'محدد'|tr }}</b>
+  <span class="sp"></span>
+  <button class="btn sm" type="button" onclick="exportSelected()">⬇ CSV</button>
+  <button class="btn sm ghost" type="button" disabled>{{ 'أرشفة'|tr }}</button>
+  <button class="btn sm ghost" type="button" disabled>{{ 'حذف'|tr }}</button>
+  <button class="btn sm ghost" type="button" onclick="clearSelection()">{{ 'إلغاء التحديد'|tr }}</button>
+</div>
+
+<table class="tbl" id="list" data-code="{{ code }}">
+  <thead><tr>
+    <th style="width:30px"><input type="checkbox" id="select-all" onclick="toggleAll(this)"></th>
+    {% for c in columns %}<th>{{ c|tr }}</th>{% endfor %}<th>{{ 'الحالة'|tr }}</th><th></th>
+  </tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr{% if row.group %} class="grp"{% endif %}>
+      <td><input type="checkbox" class="row-check" value="{{ row.id }}" onchange="updateBulk()"></td>
+      {% for cell in row.cells %}
+        <td>{% if forloop.first and row.detail %}<a href="{% url row.detail row.id %}" style="text-decoration:none;font-weight:800;color:var(--blue)">{{ cell }}</a>{% else %}{{ cell }}{% endif %}</td>
+      {% endfor %}
+      <td><span class="pill {% if row.pill %}{{ row.pill }}{% elif row.s == 'ok' or row.s == 'delivered' or row.s == 'received' %}ok-p{% elif row.s == 'low' %}low-p{% elif row.s == 'confirmed' or row.s == 'draft' %}mute-p{% else %}warn-p{% endif %}">{{ row.label|tr }}</span></td>
+      <td>
+        {% if row.action %}
+        <form method="post" action="{% url row.action.0 row.id %}" style="margin:0">{% csrf_token %}
+          <button class="btn sm" type="submit">{{ row.action.1|tr }}</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="{{ columns|length|add:3 }}" class="empty">{{ 'لا توجد سجلات'|tr }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<script src="{% static 'js/list.js' %}"></script>
+{% endblock %}

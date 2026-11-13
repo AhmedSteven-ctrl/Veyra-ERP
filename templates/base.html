@@ -1,0 +1,53 @@
+{% load static i18n veyra_i18n %}<!DOCTYPE html>
+<html lang="{{ request.LANGUAGE_CODE|default:'ar' }}" dir="{% if request.LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veyra ERP - {% block title %}{% endblock %}</title>
+<link rel="icon" href="{% static 'img/logo.png' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="{% static 'js/theme-init.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a href="{% url 'home' %}" class="brand"><img class="logo" src="{% static 'img/logo.png' %}" alt="Veyra"> Veyra</a>
+  <span class="crumb">{% block crumb %}<b>{% if request.LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</b>{% endblock %}</span>
+  <span class="sp"></span>
+  {% if user.is_authenticated %}
+  <input class="search" placeholder="🔎 {{ 'بحث شامل (قريباً)'|tr }}" disabled>
+  <span class="who">{{ user.get_full_name|default:user.username }}{% if user.company %} · {{ user.company.name }}{% endif %}</span>
+  {% endif %}
+  <button class="iconbtn" id="theme-btn" type="button" onclick="toggleTheme()" title="dark / light">🌓</button>
+  <form class="lang-form" method="post" action="{% url 'set_language' %}">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <input type="hidden" name="language" value="{% if request.LANGUAGE_CODE == 'en' %}ar{% else %}en{% endif %}">
+    <button class="iconbtn" type="submit">{% if request.LANGUAGE_CODE == 'en' %}عربي{% else %}EN{% endif %}</button>
+  </form>
+  {% if user.is_authenticated %}
+  <details class="dd">
+    <summary><span class="avatar">{{ user.username|slice:":1"|upper }}</span></summary>
+    <div class="dd-menu">
+      <div class="dd-head">{{ user.get_full_name|default:user.username }}<br><span class="muted">{% if user.is_superuser %}{{ 'مدير النظام'|tr }}{% elif user.is_company_manager %}{{ 'مدير الشركة'|tr }}{% else %}{{ 'مستخدم'|tr }}{% endif %}</span></div>
+      <a href="{% url 'my_preferences' %}">{{ 'تفضيلاتي'|tr }}</a>
+      <a href="{% url 'password_change' %}">{{ 'تغيير كلمة المرور'|tr }}</a>
+      <a href="{% url 'home' %}">{{ 'كل التطبيقات'|tr }}</a>
+      <div class="dd-sep"></div>
+      <form method="post" action="{% url 'logout' %}" style="margin:0">{% csrf_token %}
+        <button type="submit" class="dd-danger">{{ 'تسجيل الخروج'|tr }}</button>
+      </form>
+    </div>
+  </details>
+  {% else %}
+  <a class="btn sm" href="{% url 'login' %}">{{ 'دخول'|tr }}</a>
+  {% endif %}
+</header>
+{% block modnav %}{% endblock %}
+<main class="rise">
+  {% if messages %}{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

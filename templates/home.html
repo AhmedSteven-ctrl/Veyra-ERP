@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load veyra_i18n %}
+{% block title %}{{ 'التطبيقات'|tr }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-t">{{ 'مرحباً'|tr }} {{ user.first_name|default:user.username }}</div>
+  <div class="hero-s">{{ 'اختار المديول اللي عايز تشتغل عليه · اسحب الكروت لترتيبها'|tr }}</div>
+</section>
+<section class="apps">
+{% for g in groups %}
+  <a class="tile" draggable="true" href="{% if g.url %}{% url g.url %}{% else %}#{% endif %}" style="--c1:{{ g.c1 }};--c2:{{ g.c2 }}">
+    <div class="ico">{{ g.icon|safe }}</div>
+    <div class="tn">{{ g.module.name|tr }}</div>
+    <div class="tc">{% if g.url %}{{ 'افتح'|tr }}{% else %}{{ 'قريباً'|tr }}{% endif %}{% if g.children %} · {{ g.children }} {{ 'فرعي'|tr }}{% endif %}</div>
+  </a>
+{% empty %}
+  <div class="empty" style="grid-column:1/-1">{{ 'مفيش مديولات مفعّلة ليك دلوقتي.'|tr }}</div>
+{% endfor %}
+</section>
+{% endblock %}

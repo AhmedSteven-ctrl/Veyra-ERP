@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load veyra_i18n %}
+{% block title %}{{ 'الإعدادات'|tr }}{% endblock %}
+{% block crumb %}<a href="{% url 'home' %}">{{ 'الرئيسية'|tr }}</a> › <b>{{ 'الإعدادات'|tr }}</b>{% endblock %}
+{% block content %}
+<section class="hero"><div class="hero-t">{{ 'الإعدادات'|tr }}</div><div class="hero-s">{{ company.name }} · {{ 'إعدادات كل مديول لوحده'|tr }}</div></section>
+<section class="apps">
+  {% for c in cards %}
+  <a class="tile" href="{% url 'settings_module' c.code %}" style="--c1:{{ c.c1 }};--c2:{{ c.c2 }}">
+    <div class="ico">{{ c.icon|safe }}</div>
+    <div class="tn">{{ c.name|tr }}</div>
+    <div class="tc">{{ c.count }} {{ 'إعداد'|tr }}</div>
+  </a>
+  {% empty %}<div class="empty" style="grid-column:1/-1">{{ 'مفيش مديولات ليها إعدادات لسه.'|tr }}</div>{% endfor %}
+</section>
+<div style="text-align:center;margin-top:10px"><a class="btn ghost sm" href="{% url 'home' %}">{{ 'رجوع'|tr }}</a></div>
+{% endblock %}
